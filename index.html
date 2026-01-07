@@ -21,17 +21,6 @@ h2{text-align:center}
   margin:auto
 }
 
-.map-container::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  background-image:
-    linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0,0,0,0.05) 1px, transparent 1px);
-  background-size:10% 10%;
-  pointer-events:none
-}
-
 .marker{
   position:absolute;
   width:12px;height:12px;
@@ -72,19 +61,17 @@ h2{text-align:center}
 
 <script>
 const SHEET_ID="18YbWGcRIHhxv40v_7NTXQUNL3mV9jnNQrjfcUOvQEQs";
-const SHEET_NAME="Zone WH FG";
+const SHEET_NAME="Zone WH FG"; // ⚠️ ต้องตรงชื่อชีตจริง 100%
 
 const DATE_COL=1, INSPECTOR_COL=2, NUMBER_COL=3, XY_COL=13;
 const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
 let rows=[];
 
-/* ===== ป้องกันปี 3111 ===== */
 function displayYear(y){
   y=parseInt(y,10);
   return y<2400 ? y+543 : y;
 }
 
-/* ===== อ่านวันที่จาก AppSheet / Google Sheet ===== */
 function parseDate(cell){
   if(!cell) return null;
 
@@ -100,16 +87,16 @@ function parseDate(cell){
   return null;
 }
 
-/* ===== LOAD DATA ===== */
 fetch(url)
 .then(r=>r.text())
 .then(t=>{
   const json=JSON.parse(t.substring(47).slice(0,-2));
-  rows=json.table.rows;
+  rows=json.table.rows || [];
+  console.log("ROWS:", rows.length);
   buildDropdown();
-});
+})
+.catch(e=>console.error(e));
 
-/* ===== BUILD DROPDOWN ===== */
 function buildDropdown(){
   const set=new Set();
   rows.forEach(r=>{
@@ -132,14 +119,13 @@ function buildDropdown(){
   });
 
   if(sel.options.length>1){
-    sel.selectedIndex=1;   // ⭐ จำเป็นสำหรับ Looker Studio
+    sel.selectedIndex=1;
     render(sel.value);
   }
 
   sel.onchange=()=>render(sel.value);
 }
 
-/* ===== RENDER MAP ===== */
 function render(selected){
   const map=document.getElementById("map");
   map.innerHTML="";
@@ -169,4 +155,6 @@ function render(selected){
 
 </body>
 </html>
+
+
 
